@@ -1,14 +1,14 @@
 <h1 align="center">🎬 WatchWise — Movie Recommender System</h1>
 
 <p align="center">
-  <b>A content-based movie recommendation engine that suggests 5 similar films for any title you pick — with posters, in a clean Streamlit UI.</b>
+  <b>AI-curated movie recommendation system that suggests similar films by analyzing metadata.</b>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/Streamlit-App-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/scikit--learn-ML-F7931E?style=flat-square&logo=scikitlearn&logoColor=white" alt="scikit-learn"/>
-  <img src="https://img.shields.io/badge/TMDB-API-01B4E4?style=flat-square&logo=themoviedatabase&logoColor=white" alt="TMDB"/>
+  <img src="https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white" alt="CI/CD"/>
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License"/>
 </p>
 
@@ -16,7 +16,7 @@
 
 ## 🔗 Live Demo
 
-**[▶ watchwise-mrs.streamlit.app](https://watchwise-mrs.streamlit.app)**
+**[▶ watchwise-movie-ai.streamlit.app](https://watchwise-movie-ai.streamlit.app/)**
 
 Pick a film, hit **Recommend**, get five neighbours with posters.
 
@@ -26,9 +26,9 @@ Pick a film, hit **Recommend**, get five neighbours with posters.
 
 Ever finished a film and thought *"give me five more like that"*? That's the whole idea here.
 
-**WatchWise** is a **content-based recommender**: it doesn't need your watch history, your ratings, or any other users at all. It looks purely at *what a movie is made of* — its plot, genres, keywords, cast and director — turns that into a numerical fingerprint, and finds the five films whose fingerprints sit closest to the one you chose.
+**WatchWise** is an **AI-curated content-based recommender**: it doesn't need your watch history, your ratings, or any other users at all. It looks purely at *what a movie is made of* — its plot, genres, keywords, cast and director — turns that into a numerical fingerprint, and finds the five films whose fingerprints sit closest to the one you chose.
 
-Pick a movie from the dropdown, hit **Recommend**, and five posters appear side by side, pulled live from the TMDB API.
+Pick a movie from the dropdown, hit **Recommend**, and five posters appear side by side, pulled live via a resilient multi-API engine (Cinemeta, IMDb, Wikipedia & TMDB).
 
 ---
 
@@ -133,7 +133,7 @@ WatchWise/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/smitthakkar11/Movie-Recommender-System.git WatchWise
+git clone https://github.com/Chandrakant-Suman/WatchWise.git
 cd WatchWise
 ```
 
@@ -200,15 +200,13 @@ Grab the CSVs from the [TMDB 5000 dataset on Kaggle](https://www.kaggle.com/data
 
 1. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
 2. **Create app** → **Deploy a public app from GitHub**.
-3. Repository `smitthakkar11/Movie-Recommender-System`, branch `main`, main file `app.py`.
-4. Main file path is `app.py`. Under **Advanced settings → Secrets**, paste:
+3. Repository `Chandrakant-Suman/WatchWise`, branch `main`, main file `app.py`.
+4. (Optional) Under **Advanced settings → Secrets**, inject your API keys if desired:
    ```toml
    TMDB_API_KEY = "your_key_here"
    ```
-   Skip this and the app still works — posters just render as placeholders.
+   *Skip this and the app still works completely out-of-the-box via Cinemeta and IMDb.*
 5. **Deploy.**
-
-Nothing else is needed: the model artifacts are committed and total ~400 KB, so the container has everything on first boot. There is no dataset to download and no matrix to rebuild — which is exactly why the vectors are stored instead of the 180 MB similarity matrix.
 
 ---
 
@@ -216,9 +214,8 @@ Nothing else is needed: the model artifacts are committed and total ~400 KB, so 
 
 **Current limitations, stated honestly:**
 - **Content-based only** — it has no idea what *you* like, only what a movie *is*. Two films can share genre and cast and still appeal to completely different audiences.
-- **Fixed catalogue** — ~5000 films, nothing released after the dataset snapshot.
-- **Bag-of-words ignores order and meaning** — "not a horror film" and "a horror film" look nearly identical to a count vectorizer.
-- **Poster fetches depend on TMDB being reachable** — they run concurrently behind a pooled, retrying session and fall back to a placeholder, but a hard outage means no artwork.
+- **Fixed catalogue** — ~5000 films from the TMDB dataset snapshot.
+- **Bag-of-words ignores word order** — "not a horror film" and "a horror film" look nearly identical to a count vectorizer.
 
 **Planned improvements:**
 - [ ] Swap `CountVectorizer` for **TF-IDF** so common tags stop dominating
@@ -231,17 +228,18 @@ Nothing else is needed: the model artifacts are committed and total ~400 KB, so 
 
 ## 🙏 Acknowledgements
 
-- **[TMDB](https://www.themoviedb.org/)** — for the dataset and the poster API. This product uses the TMDB API but is not endorsed or certified by TMDB.
+- **[TMDB](https://www.themoviedb.org/)** — for the metadata dataset.
 - The [TMDB 5000 dataset on Kaggle](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata).
+- **[Cinemeta](https://v3-cinemeta.strem.io/)** & **[IMDb](https://www.imdb.com/)** for poster streaming artwork.
 
 ---
 
 ## 👤 Author
 
-**Smit Thakkar**
-Motilal Nehru National Institute of Technology, Allahabad
+**Chandrakant Suman**
 
-[![GitHub](https://img.shields.io/badge/GitHub-smitthakkar11-181717?style=flat-square&logo=github)](https://github.com/smitthakkar11)
+[![GitHub](https://img.shields.io/badge/GitHub-Chandrakant--Suman-181717?style=flat-square&logo=github)](https://github.com/Chandrakant-Suman/WatchWise)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-watchwise--movie--ai-FF4B4B?style=flat-square&logo=streamlit)](https://watchwise-movie-ai.streamlit.app/)
 
 ---
 
