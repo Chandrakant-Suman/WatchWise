@@ -92,7 +92,8 @@ The full 4806×4806 matrix is ~180 MB — too big for git, and 23 million pairwi
 | NLP | **NLTK (PorterStemmer)** | Token normalization |
 | Vectorization | **scikit-learn — CountVectorizer** | Bag-of-words → numeric vectors |
 | Similarity | **SciPy sparse dot product** | Cosine similarity, computed per request |
-| Posters | **IMDb / TMDB API** | Live poster artwork (IMDb works out-of-the-box with zero API key) |
+| Posters | **Cinemeta · IMDb · Wikipedia · TMDB** | 4-tier fallback (100% poster coverage, zero setup needed) |
+| Testing & CI/CD | **Pytest · GitHub Actions** | Automated syntax, security scanning & multi-version Python testing |
 | Frontend | **Streamlit** | Dropdown, button, 5-column poster grid |
 | Persistence | **SciPy `.npz` + CSV** | ~400 KB of committed model artifacts |
 
@@ -101,18 +102,25 @@ The full 4806×4806 matrix is ~180 MB — too big for git, and 23 million pairwi
 ## 📁 Project Structure
 
 ```
-Movie-Recommender-System/
-├── app.py                  # Streamlit app — UI, recommend(), poster fetching
-├── build_model.py          # Rebuilds model/ from the raw TMDB CSVs
-├── movie.ipynb.zip         # Original notebook — EDA, preprocessing, model build
+WatchWise/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml           # Automated linting, pytest matrix & smoke tests
+├── app.py                      # Streamlit app — UI, recommend(), multi-API poster fetching
+├── build_model.py              # Rebuilds model/ from the raw TMDB CSVs
+├── movie.ipynb.zip             # Original notebook — EDA, preprocessing, model build
 ├── model/
-│   ├── movies.csv          # movie_id + title, 4806 rows      (committed, 104 KB)
-│   └── vectors.npz         # L2-normalised count vectors      (committed, 296 KB)
-├── requirements.txt        # App dependencies
-├── requirements-build.txt  # Extra deps for build_model.py only
+│   ├── movies.csv              # movie_id + title, 4806 rows      (committed, 104 KB)
+│   └── vectors.npz             # L2-normalised count vectors      (committed, 296 KB)
+├── tests/
+│   └── test_recommender.py     # Unit, recommendation & security tests (7 passing)
+├── requirements.txt            # Production app dependencies
+├── requirements-dev.txt        # Development & CI/CD test dependencies (pytest, flake8)
+├── requirements-build.txt      # Extra deps for build_model.py only
 ├── .streamlit/
-│   ├── config.toml         # Dark theme
-│   └── secrets.toml        # TMDB API key (git-ignored, never commit)
+│   └── config.toml             # Dark theme configuration
+├── .env.example                # Safe environment variable template
+├── .env                        # Local secrets & API config (git-ignored, never commit)
 └── README.md
 ```
 
@@ -125,42 +133,56 @@ Movie-Recommender-System/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/smitthakkar11/Movie-Recommender-System.git
-cd Movie-Recommender-System
+git clone https://github.com/smitthakkar11/Movie-Recommender-System.git WatchWise
+cd WatchWise
 ```
 
 ### 2. Set up the environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Run it
+### 3. Configure Environment Variables (Optional)
+
+Copy the safe example environment template:
+
+```bash
+cp .env.example .env            # Windows PowerShell: Copy-Item .env.example .env
+```
+
+The app works **100% out of the box** without any API keys by dynamically fetching posters via Cinemeta and IMDb. If you wish to use a TMDB API key, add it to `.env`:
+
+```ini
+TMDB_API_KEY="your_tmdb_api_key_here"
+```
+
+### 4. Run the App
 
 ```bash
 streamlit run app.py
 ```
 
-Open `http://localhost:8501`. That's it — the model artifacts are in the repo, so there is nothing to download or train.
+Open `http://localhost:8501`.
 
-### 4. Multi-API Movie Posters (100% Zero-Config Coverage)
+### 5. Running Tests & Code Quality Checks
 
-The app utilizes a 4-tier fallback pipeline so every movie across the dataset has poster coverage without requiring any manual setup:
+```bash
+pip install -r requirements-dev.txt
+pytest -v tests/
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,__pycache__
+```
 
-1. **TMDB API** (optional, checked first if `TMDB_API_KEY` is provided)
+### 6. Multi-API Poster Engine (4-Tier Fallback)
+
+1. **TMDB API** (optional, checked first if `TMDB_API_KEY` is set in `.env`)
 2. **Cinemeta (Stremio Metadata Catalog)**: Fast dedicated film catalog with high-resolution poster artwork.
 3. **IMDb Suggestion API**: Direct lookup backed by Amazon's CloudFront CDN (`m.media-amazon.com`).
 4. **Wikipedia REST API**: Encyclopedic infobox poster images as a final safeguard.
 
-If you ever wish to use TMDB directly, you can optionally set `TMDB_API_KEY` in `.streamlit/secrets.toml`:
-
-```toml
-TMDB_API_KEY = "your_key_here"
-```
-
-### 5. Rebuilding the model (only if you change the pipeline)
+### 7. Rebuilding the model (only if you change the pipeline)
 
 ```bash
 pip install -r requirements-build.txt
